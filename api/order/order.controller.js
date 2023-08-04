@@ -31,11 +31,14 @@ export async function deleteOrder(req, res) {
 
 export async function addOrder(req, res) {
     
-    var {loggedinUser} = req
- 
+    // var {loggedinUser} = req
+    var loggedinUser = authService.validateToken(req.cookies.loginToken)
+
     try {
         var order = req.body
-        order.buyerId = loggedinUser._id
+        logger.info('loggedinUser is:', loggedinUser)
+        // order.buyerId = loggedinUser._id
+        console.log(order);
         order = await orderService.add(order)
         
         // prepare the updated order for sending out
