@@ -5,8 +5,8 @@ export async function getGigs(req, res) {
   try {
     logger.debug('Getting Gigs:', req.query)
     const filterBy = {
-      txt: req.query.txt || '',
-      pageIdx: req.query.pageIdx
+      // txt: req.query.txt || '',
+      // pageIdx: req.query.pageIdx
     }
     const gigs = await gigService.query(filterBy)
     res.json(gigs)
