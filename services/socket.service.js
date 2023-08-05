@@ -24,19 +24,19 @@ export function setupSocketAPI(http) {
             socket.myTopic = topic
         })
         socket.on('chat-send-msg', msg => {
-            logger.info(`New chat msg from socket [id: ${socket.id}], emitting to topic ${socket.myTopic}`)
+            logger.info(`New chat msg ${msg} socket [id: ${socket.id}], emitting to topic ${socket.myTopic}`)
             // emits to all sockets:
             // gIo.emit('chat addMsg', msg)
             // emits only to sockets in the same room
-
+            socket.broadcast.emit('chat-add-msg', msg)
             // gIo.to(socket.myTopic).emit('chat-add-msg', msg)
-            broadcast({
-                type: 'chat-add-msg',
-                data: msg,
-                room: socket.myTopic,
-                userId: socket.userId,
-              })
-              gigService.addgigMsg(socket.myTopic, msg)
+            // broadcast({
+            //     type: 'chat-add-msg',
+            //     data: msg,
+            //     room: socket.myTopic,
+            //     userId: socket.userId,
+            //   })
+            //   gigService.addgigMsg(socket.myTopic, msg)
         })
 
         socket.on('chat-set-user-is-typing', (username) => {

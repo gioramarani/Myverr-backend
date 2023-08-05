@@ -7,12 +7,13 @@ import cookieParser from 'cookie-parser'
 const app = express()
 const server = http.createServer(app)
 
-const { Server } = require("socket.io");
-const io = new Server(server)
+// const { Server } = require("socket.io");
+// const io = new Server(server)
 
 // Express App Config
 app.use(cookieParser())
 app.use(express.json())
+app.use(express.static('public'))
 
 
 if (process.env.NODE_ENV === 'production') {
@@ -52,12 +53,12 @@ app.get('/**', (req, res) => {
     res.sendFile(path.resolve('public/index.html'))
 })
 
-io.on('connection', (socket) => {
-    console.log('a user connected');
-    socket.on('disconnect', () => {
-        console.log('user disconnected');
-    })
-});
+// io.on('connection', (socket) => {
+//     console.log('a user connected');
+//     socket.on('disconnect', () => {
+//         console.log('user disconnected');
+//     })
+// });
 
 import { logger } from './services/logger.service.js'
 const port = process.env.PORT || 3030
