@@ -1,8 +1,8 @@
-import {logger} from '../../services/logger.service.js'
-import {socketService} from '../../services/socket.service.js'
-import {userService} from '../user/user.service.js'
-import {authService} from '../auth/auth.service.js'
-import {orderService} from './order.service.js'
+import { logger } from '../../services/logger.service.js'
+import { socketService } from '../../services/socket.service.js'
+import { userService } from '../user/user.service.js'
+import { authService } from '../auth/auth.service.js'
+import { orderService } from './order.service.js'
 
 export async function getOrders(req, res) {
     try {
@@ -30,7 +30,7 @@ export async function deleteOrder(req, res) {
 
 
 export async function addOrder(req, res) {
-    
+
     // var {loggedinUser} = req
     var loggedinUser = authService.validateToken(req.cookies.loginToken)
 
@@ -40,10 +40,10 @@ export async function addOrder(req, res) {
         // order.buyerId = loggedinUser._id
         console.log(order);
         order = await orderService.add(order)
-        
+
         // prepare the updated order for sending out
         order.seller = await userService.getById(order.sellerId)
-        
+
         //MAYBE DETELE THIS BECAUSE WE ARE NOT ADDING A SCORE
         loggedinUser = await userService.update(loggedinUser)
 
@@ -56,19 +56,35 @@ export async function addOrder(req, res) {
         delete order.sellerId
         delete order.buyerId
 
-        socketService.broadcast({type: 'order-added', data: order, userId: loggedinUser._id})
-        socketService.emitToUser({type: 'order-about-you', data: order, userId: order.seller._id})
-        
+        socketService.broadcast({ type: 'order-added', data: order, userId: loggedinUser._id })
+        socketService.emitToUser({ type: 'order-for-you', data: order, userId: order.seller._id })
+
         // const fullUser = await userService.getById(loggedinUser._id)
         // socketService.emitTo({type: 'user-updated', data: fullUser, label: fullUser._id})
-        const currGig = await gigService.getById(order.gigId)
-        socketService.emitTo({type: 'user-updated', data: currGig, label: currGig._id})
+        // const currGig = await gigService.getById(order.gigId)
+        // socketService.emitTo({type: 'user-updated', data: currGig, label: currGig._id})
 
         res.send(order)
 
     } catch (err) {
         logger.error('Failed to add order', err)
         res.status(400).send({ err: 'Failed to add order' })
+    }
+}
+
+export async function updateOrder(req, res) {
+    try {
+        const order = req.body
+        const updatedOrder = await orderService.update(order)
+
+        // socketService.broadcast({ type: 'order-updated', data: order, userId: loggedinUser._id })
+        socketService.emitToUser({ type: 'your-order-updated', data: order, userId: order.buyer._id })
+
+        res.json(updatedOrder)
+    } catch (err) {
+        logger.error('Failed to update order', err)
+        res.status(400).send({ err: 'Failed to update order' })
+
     }
 }
 

@@ -106,6 +106,18 @@ async function add(order) {
     }
 }
 
+async function update(order) {
+    try {
+        const orderToSave = order
+        const collection = await dbService.getCollection('order')
+        await collection.updateOne({ _id: ObjectId(order._id) }, { $set: orderToSave })
+        return order
+    } catch (err) {
+        logger.error(`cannot update order ${orderId}`, err)
+        throw err
+    }
+}
+
 function _buildCriteria(filterBy) {
     const criteria = {}
     if (filterBy.buyerId) criteria.buyerId = filterBy.buyerId
@@ -115,7 +127,8 @@ function _buildCriteria(filterBy) {
 export const orderService = {
     query,
     remove,
-    add
+    add,
+    update,
 }
 
 

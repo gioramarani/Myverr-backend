@@ -44,7 +44,7 @@ async function getById(userId) {
             delete order.byUser
             return order
         })
-
+        
         return user
     } catch (err) {
         logger.error(`while finding user by id: ${userId}`, err)
