@@ -28,8 +28,21 @@ export function setupSocketAPI(http) {
             // emits to all sockets:
             // gIo.emit('chat addMsg', msg)
             // emits only to sockets in the same room
-            gIo.to(socket.myTopic).emit('chat-add-msg', msg)
+
+            // gIo.to(socket.myTopic).emit('chat-add-msg', msg)
+            broadcast({
+                type: 'chat-add-msg',
+                data: msg,
+                room: socket.myTopic,
+                userId: socket.userId,
+              })
+              gigService.addgigMsg(socket.myTopic, msg)
         })
+
+        socket.on('chat-set-user-is-typing', (username) => {
+            socket.broadcast.to(socket.myTopic).emit('chat-user-is-typing', username)
+          })
+          
         socket.on('user-watch', userId => {
             logger.info(`user-watch from socket [id: ${socket.id}], on user ${userId}`)
             socket.join('watching:' + userId)
@@ -87,6 +100,24 @@ async function broadcast({ type, data, room = null, userId }) {
     }
 }
 
+async function broadcastOrderUpdate({ productName, type, userId }) {
+    return broadcast({
+      type: 'order-update',
+      data: _getUpdateMsg(productName, type),
+      userId,
+    })
+  }
+
+  function _getUpdateMsg(productName, type) {
+    if (type === 'pending')
+    return `You have recieved a new order!`
+    if (type === 'approved') 
+    return `Your order has been ${type}, when it is ready for you, we will let you know :)`
+    if (type === 'complited') 
+    return `Your order is ${type} you can find it in your email inbox! Thank you for choosing Myverr.`
+  }
+  
+
 async function _getUserSocket(userId) {
     const sockets = await _getAllSockets()
     const socket = sockets.find(s => s.userId === userId)
@@ -117,4 +148,5 @@ export const socketService = {
     // Send to all sockets BUT not the current socket - if found
     // (otherwise broadcast to a room / to all)
     broadcast,
+    broadcastOrderUpdate,
 }

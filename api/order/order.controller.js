@@ -44,8 +44,9 @@ export async function addOrder(req, res) {
         // prepare the updated order for sending out
         order.seller = await userService.getById(order.sellerId)
         
-
+        //MAYBE DETELE THIS BECAUSE WE ARE NOT ADDING A SCORE
         loggedinUser = await userService.update(loggedinUser)
+
         order.buyer = loggedinUser
 
         // User info is saved also in the login-token, update it
@@ -58,8 +59,10 @@ export async function addOrder(req, res) {
         socketService.broadcast({type: 'order-added', data: order, userId: loggedinUser._id})
         socketService.emitToUser({type: 'order-about-you', data: order, userId: order.seller._id})
         
-        const fullUser = await userService.getById(loggedinUser._id)
-        socketService.emitTo({type: 'user-updated', data: fullUser, label: fullUser._id})
+        // const fullUser = await userService.getById(loggedinUser._id)
+        // socketService.emitTo({type: 'user-updated', data: fullUser, label: fullUser._id})
+        const currGig = await gigService.getById(order.gigId)
+        socketService.emitTo({type: 'user-updated', data: currGig, label: currGig._id})
 
         res.send(order)
 
