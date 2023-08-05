@@ -35,14 +35,17 @@ export async function addOrder(req, res) {
     var loggedinUser = authService.validateToken(req.cookies.loginToken)
 
     try {
-        var order = req.body
+        var recievedOrder = req.body
+        recievedOrder.buyerId = loggedinUser._id
+        logger.info('recieved order:', recievedOrder)
         logger.info('loggedinUser is:', loggedinUser)
         // order.buyerId = loggedinUser._id
-        console.log(order);
-        order = await orderService.add(order)
-
+        const order = await orderService.add(recievedOrder)
+        logger.info('order:', order)
+        
         // prepare the updated order for sending out
         order.seller = await userService.getById(order.sellerId)
+        logger.info('order seller:', order.seller)
 
         //MAYBE DETELE THIS BECAUSE WE ARE NOT ADDING A SCORE
         loggedinUser = await userService.update(loggedinUser)

@@ -86,20 +86,20 @@ async function remove(orderId) {
 }
 
 
-async function add(order) {
+async function add(recievedOrder) {
     try {
-        const orderToAdd = {
-            buyerId: ObjectId(order.buyerId),
-            sellerId: ObjectId(order.sellerId),
-            gigId: ObjectId(order.gigId),
-            status: order.status,
-            createdAt: order.createdAt,
-            packageType: order.packageType
-        }
+        // const orderToAdd = {
+        //     sellerId: ObjectId(recievedOrder.sellerId),
+        //     gigId: ObjectId(recievedOrder.gigId),
+        //     // buyerId: ObjectId(recievedOrder.buyerId),
+        //     status: recievedOrder.status,
+        //     createdAt: recievedOrder.createdAt,
+        //     packageType: recievedOrder.packageType
+        // }
+        logger.info('order added', recievedOrder)
         const collection = await dbService.getCollection('order')
-        await collection.insertOne(orderToAdd)
-        logger.info('order added', orderToAdd)
-        return orderToAdd
+        await collection.insertOne(recievedOrder)
+        return recievedOrder
     } catch (err) {
         logger.error('cannot insert order', err)
         throw err
@@ -107,13 +107,14 @@ async function add(order) {
 }
 
 async function update(order) {
+    logger.info('order:' ,order)
     try {
-        const orderToSave = order
+        // const orderToSave = order
         const collection = await dbService.getCollection('order')
-        await collection.updateOne({ _id: ObjectId(order._id) }, { $set: orderToSave })
+        await collection.updateOne({ _id: ObjectId(order._id) }, { $set: order })
         return order
     } catch (err) {
-        logger.error(`cannot update order ${orderId}`, err)
+        logger.error(`cannot update order ${order._id}`, err)
         throw err
     }
 }
