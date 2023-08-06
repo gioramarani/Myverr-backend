@@ -9,59 +9,26 @@ const PAGE_SIZE = 3
 async function query(filterBy = {}) {
 	const collection = await dbService.getCollection('gig')
 	try {
-		const criteria = buildCriteria(filterBy)
+		const criteria = buildCriteria(filterBy).criteria
 		console.log('filterBy', filterBy)
+		console.log('sortBy:', filterBy.sortBy)
 
-		// Price filter
-		// if (filterBy.min && filterBy.max) {
-		// 	const min = parseInt(filterBy.min)
-		// 	const max = parseInt(filterBy.max)
-		// 	criteria.price = { $gte: min, $lte: max }
-		// }
+		let gigs = await collection.find(criteria).toArray()
 
-		// // Delivery days filter
-		// if (filterBy.delivery) {
-		// 	const delivery = parseInt(filterBy.delivery)
-		// 	criteria.daysToMake = { $lte: delivery }
-		// }
-
-		// // Tags (subCategory) filter
-		// if (filterBy.subCategory) {
-		// 	criteria.tags = { $in: [filterBy.subCategory.toLowerCase()] }
-		// }
-
-		// // Text search filter
-		// if (filterBy.txt) {
-		// 	const regex = new RegExp(filterBy.txt, 'i')
-		// 	criteria.$or = [{ title: regex }, { 'owner.fullname': regex }]
-		// }
-
-		let gigCursor = collection.find(criteria)
-
-		// Initially fetching all the gigs (this can be further optimized if needed)
-		let gigs = await gigCursor.toArray()
-
-		// Sorting (assuming avgRating is a field in your schema; if not, you'll need a more complex aggregation pipeline)
-		if (filterBy.sortBy) {
-			if (filterBy.sortBy === 'Highest Rating') {
-				gigs = gigs.sort((a, b) => {
-					const avgRatingA =
-						a.reviews.reduce(
-							(acc, review) => acc + review.rate,
-							0
-						) / a.reviews.length
-					const avgRatingB =
-						b.reviews.reduce(
-							(acc, review) => acc + review.rate,
-							0
-						) / b.reviews.length
-					return avgRatingB - avgRatingA
-				})
-			}
-
-			if (filterBy.sortBy === 'Most Reviews') {
-				gigs = gigs.sort((a, b) => b.reviews.length - a.reviews.length)
-			}
+		console.log(filterBy.sortBy)
+		// Sort in memory
+		if (filterBy.sortBy === 'Highest Rating') {
+			gigs = gigs.sort((a, b) => {
+				const avgRatingA =
+					a.reviews.reduce((acc, review) => acc + review.rate, 0) /
+					a.reviews.length
+				const avgRatingB =
+					b.reviews.reduce((acc, review) => acc + review.rate, 0) /
+					b.reviews.length
+				return avgRatingB - avgRatingA
+			})
+		} else if (filterBy.sortBy === 'Most Reviews') {
+			gigs = gigs.sort((a, b) => b.reviews.length - a.reviews.length)
 		}
 
 		return gigs
@@ -153,6 +120,8 @@ async function removeGigMsg(gigId, msgId) {
 
 function buildCriteria(filterBy) {
 	const criteria = {}
+	const sort = {}
+
 	// if (filterBy.title) {
 	//     criteria.title = { $regex: filterBy.title, $options: 'i' }
 	// }
@@ -193,10 +162,18 @@ function buildCriteria(filterBy) {
 		const regex = new RegExp(filterBy.txt, 'i')
 		criteria.$or = [{ title: regex }, { 'owner.fullname': regex }]
 	}
+	console.log('criteria', criteria)
+	if (filterBy.sortBy === 'Highest Rating') {
+		// NOTE: MongoDB doesn't support sorting by derived/calculated values directly.
+		// This assumes you have a 'rating' field on each gig that stores the average rating.
+		sort.rating = -1
+	}
 
-	return criteria
+	return {
+		criteria,
+		sort,
+	}
 }
-
 export const gigService = {
 	remove,
 	query,
