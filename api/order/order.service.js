@@ -109,10 +109,18 @@ async function add(recievedOrder) {
 async function update(order) {
     logger.info('order:' ,order)
     try {
-        // const orderToSave = order
+        const orderToSave = order
+        // {
+        //     buyerId: order.buyerId,
+        //     sellerId: order.sellerId,
+        //     gigId: order.gigId,
+        //     status: order.status,
+        //     createdAt: order.createdAt,
+        //     packageType: order.packageType,
+        // }
         const collection = await dbService.getCollection('order')
-        await collection.updateOne({ _id: ObjectId(order._id) }, { $set: order })
-        return order
+        await collection.updateOne({ sellerId: order.sellerId }, { $set: orderToSave })
+        return orderToSave
     } catch (err) {
         logger.error(`cannot update order ${order._id}`, err)
         throw err

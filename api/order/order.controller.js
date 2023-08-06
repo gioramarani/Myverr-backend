@@ -59,7 +59,7 @@ export async function addOrder(req, res) {
         delete order.sellerId
         delete order.buyerId
 
-        socketService.broadcast({ type: 'order-added', data: order, userId: loggedinUser._id })
+        // socketService.broadcast({ type: 'order-added', data: order, userId: loggedinUser._id })
         socketService.emitToUser({ type: 'order-for-you', data: order, userId: order.seller._id })
 
         // const fullUser = await userService.getById(loggedinUser._id)
@@ -81,7 +81,9 @@ export async function updateOrder(req, res) {
         const updatedOrder = await orderService.update(order)
 
         // socketService.broadcast({ type: 'order-updated', data: order, userId: loggedinUser._id })
-        socketService.emitToUser({ type: 'your-order-updated', data: order, userId: order.buyer._id })
+        socketService.emitToUser({ type: 'your-order-updated', data: order, userId: order.buyerId })
+        gIo.emit('order-updated', order)
+
 
         res.json(updatedOrder)
     } catch (err) {
