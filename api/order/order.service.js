@@ -60,7 +60,8 @@ async function query(filterBy = {}) {
             },
             {
                 $project: {
-                 
+                  createdAt: 1,
+                  status: 1,
                   buyer: { _id: 1, username: 1 },
                   seller: { _id: 1, username: 1 },
                   gig: { _id: 1, title: 1, price: 1},
