@@ -7,34 +7,35 @@ const { ObjectId } = mongodb
 const PAGE_SIZE = 3
 
 async function query(filterBy = {}) {
+	const collection = await dbService.getCollection('gig')
 	try {
-		const criteria = {}
+		const criteria = buildCriteria(filterBy)
 		console.log('filterBy', filterBy)
+
 		// Price filter
-		if (filterBy.min && filterBy.max) {
-			const min = parseInt(filterBy.min)
-			const max = parseInt(filterBy.max)
-			criteria.price = { $gte: min, $lte: max }
-		}
+		// if (filterBy.min && filterBy.max) {
+		// 	const min = parseInt(filterBy.min)
+		// 	const max = parseInt(filterBy.max)
+		// 	criteria.price = { $gte: min, $lte: max }
+		// }
 
-		// Delivery days filter
-		if (filterBy.delivery) {
-			const delivery = parseInt(filterBy.delivery)
-			criteria.daysToMake = { $lte: delivery }
-		}
+		// // Delivery days filter
+		// if (filterBy.delivery) {
+		// 	const delivery = parseInt(filterBy.delivery)
+		// 	criteria.daysToMake = { $lte: delivery }
+		// }
 
-		// Tags (subCategory) filter
-		if (filterBy.subCategory) {
-			criteria.tags = { $in: [filterBy.subCategory.toLowerCase()] }
-		}
+		// // Tags (subCategory) filter
+		// if (filterBy.subCategory) {
+		// 	criteria.tags = { $in: [filterBy.subCategory.toLowerCase()] }
+		// }
 
-		// Text search filter
-		if (filterBy.txt) {
-			const regex = new RegExp(filterBy.txt, 'i')
-			criteria.$or = [{ title: regex }, { 'owner.fullname': regex }]
-		}
+		// // Text search filter
+		// if (filterBy.txt) {
+		// 	const regex = new RegExp(filterBy.txt, 'i')
+		// 	criteria.$or = [{ title: regex }, { 'owner.fullname': regex }]
+		// }
 
-		const collection = await dbService.getCollection('gig')
 		let gigCursor = collection.find(criteria)
 
 		// Initially fetching all the gigs (this can be further optimized if needed)
@@ -148,6 +149,52 @@ async function removeGigMsg(gigId, msgId) {
 		logger.error(`cannot add gig msg ${gigId}`, err)
 		throw err
 	}
+}
+
+function buildCriteria(filterBy) {
+	const criteria = {}
+	// if (filterBy.title) {
+	//     criteria.title = { $regex: filterBy.title, $options: 'i' }
+	// }
+	// if (filterBy.category) {
+	//     criteria.category = filterBy.category
+	// }
+	// if (filterBy.subCategory) {
+	//     criteria.subCategory = filterBy.subCategory
+	// }
+	// if (filterBy.owner) {
+	//     criteria.owner = filterBy.owner
+	// }
+
+	if (filterBy.min && filterBy.max) {
+		const min = parseInt(filterBy.min)
+		const max = parseInt(filterBy.max)
+		criteria.price = { $gte: min, $lte: max }
+	}
+
+	// Delivery days filter
+	if (filterBy.delivery) {
+		const delivery = parseInt(filterBy.delivery)
+
+		criteria.daysToMake = { $lte: delivery }
+	}
+
+	// Tags (subCategory) filter
+	if (filterBy.subCategory) {
+		criteria.tags = { $in: [filterBy.subCategory.toLowerCase()] }
+	}
+
+	// Text search filter
+	if (filterBy.txt) {
+		console.log(
+			'🚀 ~ file: gig.service.js:188 ~ buildCriteria ~ filterBy.txt:',
+			filterBy.txt
+		)
+		const regex = new RegExp(filterBy.txt, 'i')
+		criteria.$or = [{ title: regex }, { 'owner.fullname': regex }]
+	}
+
+	return criteria
 }
 
 export const gigService = {
