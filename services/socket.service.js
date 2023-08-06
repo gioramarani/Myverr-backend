@@ -22,6 +22,7 @@ export function setupSocketAPI(http) {
             }
             socket.join(topic)
             socket.myTopic = topic
+            logger.info(`Socket is joining topic ${socket.myTopic} [id: ${socket.id}]`)
         })
         socket.on('chat-send-msg', msg => {
             logger.info(`New chat msg ${msg} socket [id: ${socket.id}], emitting to topic ${socket.myTopic}`)
