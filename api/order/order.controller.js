@@ -6,7 +6,10 @@ import { orderService } from './order.service.js'
 
 export async function getOrders(req, res) {
     try {
-        const orders = await orderService.query(req.query)
+        const filterby = {}
+        if(req.query.buyerId) filterby.buyerId  = req.query.buyerId
+        console.log("🚀 ~ file: order.controller.js:11 ~ getOrders ~ filterby:", filterby)
+        const orders = await orderService.query(filterby)
         res.send(orders)
     } catch (err) {
         logger.error('Cannot get orders', err)
@@ -77,15 +80,18 @@ export async function addOrder(req, res) {
 
 export async function updateOrder(req, res) {
     try {
-        const order = req.body
-        const updatedOrder = await orderService.update(order)
-
-        // socketService.broadcast({ type: 'order-updated', data: order, userId: loggedinUser._id })
-        socketService.emitToUser({ type: 'your-order-updated', data: order, userId: order.buyerId })
-        gIo.emit('order-updated', order)
-
-
+        const  { order } = req.body
+        logger.info('req.body', req.body)
+        logger.info('order', order)
+        const updatedOrder = await orderService.update(req.body)
+        
+        // socketService.emitToUser({ type: 'your-order-updated', data: order, userId: order.buyerId })
         res.json(updatedOrder)
+        socketService.broadcast({ type: 'order-updated', data: updatedOrder, userId: updatedOrder.seller._id })
+        logger.info('updatedOrder', updatedOrder)
+        // gIo.emit('order-updated', updatedOrder)
+
+
     } catch (err) {
         logger.error('Failed to update order', err)
         res.status(400).send({ err: 'Failed to update order' })

@@ -2,6 +2,7 @@ import {dbService} from '../../services/db.service.js'
 import {logger} from '../../services/logger.service.js'
 import {asyncLocalStorage} from '../../services/als.service.js'
 import mongodb from 'mongodb'
+import { json } from 'express'
 const {ObjectId} = mongodb
 
 // adapt the key name to buyer and seller.
@@ -9,15 +10,22 @@ async function query(filterBy = {}) {
     try {
         const criteria = _buildCriteria(filterBy)
         const collection = await dbService.getCollection('order')
-        // const orders = await collection.find(criteria).toArray()
+        const orders2 = await collection.find(criteria).toArray()
         var orders = await collection.aggregate([
             {
                 $match: criteria
             },
             {
+                $addFields: {
+                  buyerObjId: { $toObjectId: '$buyerId' },
+                  sellerObjId: { $toObjectId: '$sellerId' },
+                     gigObjId: { $toObjectId: '$gigId' },
+                },
+              },
+            {
                 $lookup:
                 {
-                    localField: 'buyerId',
+                    localField: 'buyerObjId',
                     from: 'user',
                     foreignField: '_id',
                     as: 'buyer'
@@ -29,7 +37,7 @@ async function query(filterBy = {}) {
             {
                 $lookup:
                 {
-                    localField: 'sellerId',
+                    localField: 'sellerObjId',
                     from: 'user',
                     foreignField: '_id',
                     as: 'seller'
@@ -41,7 +49,7 @@ async function query(filterBy = {}) {
             {
                 $lookup:
                 {
-                    localField: 'gigId',
+                    localField: 'gigObjId',
                     from: 'gig',
                     foreignField: '_id',
                     as: 'gig'
@@ -49,17 +57,25 @@ async function query(filterBy = {}) {
             },
             {
                 $unwind: '$gig'
-            }
+            },
+            {
+                $project: {
+                 
+                  buyer: { _id: 1, username: 1 },
+                  seller: { _id: 1, username: 1 },
+                  gig: { _id: 1, title: 1, price: 1},
+                },
+              },
         ]).toArray()
-        orders = orders.map(order => {
-            order.buyer = { _id: order.buyer._id, fullname: order.buyer.fullname }
-            order.seller = { _id: order.seller._id, fullname: order.seller.fullname }
-            order.gig = { _id: order.gig._id, title: order.gig.title, price: order.gig.price }
-            delete order.buyerId
-            delete order.sellerId
-            delete order.gigId
-            return order
-        })
+        // orders = orders.map(order => {
+        //     order.buyer = { _id: order.buyer._id, fullname: order.buyer.fullname }
+        //     order.seller = { _id: order.seller._id, fullname: order.seller.fullname }
+        //     order.gig = { _id: order.gig._id, title: order.gig.title, price: order.gig.price }
+        //     delete order.buyerId
+        //     delete order.sellerId
+        //     delete order.gigId
+        //     return order
+        // })
 
         return orders
     } catch (err) {
@@ -109,18 +125,18 @@ async function add(recievedOrder) {
 async function update(order) {
     logger.info('order:' ,order)
     try {
-        const orderToSave = order
-        // {
-        //     buyerId: order.buyerId,
-        //     sellerId: order.sellerId,
-        //     gigId: order.gigId,
-        //     status: order.status,
-        //     createdAt: order.createdAt,
-        //     packageType: order.packageType,
-        // }
+        const orderToSave =
+        // JSON.parse(JSON.stringify(order))
+        {
+                buyer: order.buyer,
+                seller: order.seller,
+                gig: order.gig,
+                status: order.status,
+            }
+            logger.info('orderToSave:' ,orderToSave)
         const collection = await dbService.getCollection('order')
-        await collection.updateOne({ sellerId: order.sellerId }, { $set: orderToSave })
-        return orderToSave
+        await collection.updateOne({ _id: new ObjectId(order._id) }, { $set: orderToSave })
+        return order
     } catch (err) {
         logger.error(`cannot update order ${order._id}`, err)
         throw err
