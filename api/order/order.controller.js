@@ -87,7 +87,7 @@ export async function updateOrder(req, res) {
         
         // socketService.emitToUser({ type: 'your-order-updated', data: order, userId: order.buyerId })
         res.json(updatedOrder)
-        socketService.broadcast({ type: 'order-updated', data: updatedOrder, userId: updatedOrder.seller._id })
+        // socketService.broadcast({ type: 'order-updated', data: updatedOrder, userId: updatedOrder.seller._id })
         logger.info('updatedOrder', updatedOrder)
         // gIo.emit('order-updated', updatedOrder)
 

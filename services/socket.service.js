@@ -48,6 +48,12 @@ export function setupSocketAPI(http) {
             emitToUser({type:'on-order-added',data:order,userId:order.seller._id})
             console.log("🚀 ~ file: socket.service.js:49 ~ socket.on ~ order.sellerId:", order.seller._id)
           })
+
+          socket.on('order-updated', (order) => {
+            emitToUser({type: 'on-order-updated', data: order, userId: order.buyer._id})
+            console.log("🚀 ~ file: socket.service.js:54 ~ socket.on ~ order.buyer._id:", order.buyer._id)
+          })
+
         socket.on('user-watch', userId => {
             logger.info(`user-watch from socket [id: ${socket.id}], on user ${userId}`)
             socket.join('watching:' + userId)
