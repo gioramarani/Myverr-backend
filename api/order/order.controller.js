@@ -63,7 +63,7 @@ export async function addOrder(req, res) {
         delete order.buyerId
 
         // socketService.broadcast({ type: 'order-added', data: order, userId: loggedinUser._id })
-        socketService.emitToUser({ type: 'order-for-you', data: order, userId: order.seller._id })
+        // socketService.emitToUser({ type: 'order-for-you', data: order, userId: order.seller._id })
 
         // const fullUser = await userService.getById(loggedinUser._id)
         // socketService.emitTo({type: 'user-updated', data: fullUser, label: fullUser._id})

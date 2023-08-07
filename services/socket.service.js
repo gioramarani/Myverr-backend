@@ -44,6 +44,10 @@ export function setupSocketAPI(http) {
             socket.broadcast.to(socket.myTopic).emit('chat-user-is-typing', username)
           })
           
+          socket.on('order-added',(order)=>{
+            emitToUser({type:'on-order-added',data:order,userId:order.seller._id})
+            console.log("🚀 ~ file: socket.service.js:49 ~ socket.on ~ order.sellerId:", order.seller._id)
+          })
         socket.on('user-watch', userId => {
             logger.info(`user-watch from socket [id: ${socket.id}], on user ${userId}`)
             socket.join('watching:' + userId)
