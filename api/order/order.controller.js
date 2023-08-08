@@ -3,6 +3,7 @@ import { socketService } from '../../services/socket.service.js'
 import { userService } from '../user/user.service.js'
 import { authService } from '../auth/auth.service.js'
 import { orderService } from './order.service.js'
+import { gigService } from '../gig/gig.service.js'
 
 export async function getOrders(req, res) {
     try {
@@ -48,6 +49,8 @@ export async function addOrder(req, res) {
         
         // prepare the updated order for sending out
         order.seller = await userService.getById(order.sellerId)
+        order.gig = await gigService.getById(order.gigId)
+        
         logger.info('order seller:', order.seller)
 
         //MAYBE DETELE THIS BECAUSE WE ARE NOT ADDING A SCORE
