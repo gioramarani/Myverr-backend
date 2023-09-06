@@ -7,7 +7,7 @@ const { ObjectId } = mongodb
 const PAGE_SIZE = 3
 
 async function query(filterBy = {}) {
-	const collection = await dbService.getCollection('gig')
+	const collection = await dbService.getCollection('giora')
 	try {
 		const criteria = buildCriteria(filterBy).criteria
 		console.log('filterBy', filterBy)
@@ -40,7 +40,7 @@ async function query(filterBy = {}) {
 
 async function getById(gigId) {
 	try {
-		const collection = await dbService.getCollection('gig')
+		const collection = await dbService.getCollection('giora')
 		const gig = collection.findOne({ _id: ObjectId(gigId) })
 		return gig
 	} catch (err) {
@@ -51,7 +51,7 @@ async function getById(gigId) {
 
 async function remove(gigId) {
 	try {
-		const collection = await dbService.getCollection('gig')
+		const collection = await dbService.getCollection('giora')
 		await collection.deleteOne({ _id: ObjectId(gigId) })
 		return gigId
 	} catch (err) {
@@ -62,7 +62,7 @@ async function remove(gigId) {
 
 async function add(gig) {
 	try {
-		const collection = await dbService.getCollection('gig')
+		const collection = await dbService.getCollection('giora')
 		await collection.insertOne(gig)
 		return gig
 	} catch (err) {
@@ -77,7 +77,7 @@ async function update(gig) {
 			title: gig.title,
 			description: gig.description,
 		}
-		const collection = await dbService.getCollection('gig')
+		const collection = await dbService.getCollection('giora')
 		await collection.updateOne(
 			{ _id: ObjectId(gig._id) },
 			{ $set: gigToSave }

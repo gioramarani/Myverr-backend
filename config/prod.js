@@ -4,7 +4,7 @@ dotenv.config()
 
 export default {
   dbURL: 'mongodb+srv://gioramarani:1234@cluster0.pdpj63k.mongodb.net/',
-  dbName: 'Myverrdb',
+  dbName: 'WimHof_db',
 }
 
 // export default {
